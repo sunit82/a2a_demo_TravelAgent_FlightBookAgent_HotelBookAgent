@@ -1,8 +1,11 @@
 """
 Travel Agent — A2A Orchestrator
 
+Configuration is loaded from agents/travel_agent.md which defines
+this agent's identity, skills, sub-agent URLs, and behavioral instructions.
+
 This is the main agent that the user interacts with. It:
-1. DISCOVERS sub-agents by fetching their Agent Cards
+1. DISCOVERS sub-agents by fetching their Agent Cards (URLs from agent.md)
 2. REQUESTS work by sending A2A messages to Flight Agent and Hotel Agent
 3. Waits while sub-agents PROCESS the tasks
 4. Receives DELIVERED artifacts and combines them into a travel plan
@@ -13,20 +16,27 @@ Follows the 4-step A2A flow: Discover → Request → Process → Deliver
 import uuid
 import requests
 from a2a_models import Task, TaskStatus, A2AMessage
+from agent_loader import load_agent_config, get_agent_md_path
 
 # ---------------------------------------------------------------------------
-# Configuration — URLs where sub-agents are running
+# Load configuration from agent.md
 # ---------------------------------------------------------------------------
-SUB_AGENT_URLS = [
-    "http://localhost:5001",  # Flight Agent
-    "http://localhost:5002",  # Hotel Agent
-]
+_agent_md = load_agent_config(get_agent_md_path("travel_agent"))
+_config = _agent_md["config"]
+AGENT_INSTRUCTIONS = _agent_md["instructions"]
+
+# ---------------------------------------------------------------------------
+# Configuration — Sub-agent URLs loaded from agent.md
+# ---------------------------------------------------------------------------
+SUB_AGENT_URLS = [sa["url"] for sa in _config.get("sub_agents", [])]
 
 
 class TravelAgent:
     def __init__(self):
-        self.name = "Travel Agent"
+        self.name = _config["name"]
         self.discovered_agents: dict[str, dict] = {}
+        self.sub_agent_urls = SUB_AGENT_URLS
+        self.instructions = AGENT_INSTRUCTIONS
 
     # -----------------------------------------------------------------------
     # Step 1: DISCOVER — Read Agent Cards from sub-agents
@@ -36,8 +46,9 @@ class TravelAgent:
         print("\n" + "=" * 65)
         print("🔍  STEP 1 — DISCOVER: Reading Agent Cards")
         print("=" * 65)
+        print(f"   (Sub-agent URLs loaded from agents/travel_agent.md)")
 
-        for base_url in SUB_AGENT_URLS:
+        for base_url in self.sub_agent_urls:
             card_url = f"{base_url}/.well-known/agent.json"
             try:
                 resp = requests.get(card_url, timeout=5)

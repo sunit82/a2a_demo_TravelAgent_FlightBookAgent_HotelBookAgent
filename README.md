@@ -31,7 +31,7 @@ You (User)
 | 3    | **Process**  | Each sub-agent processes the task (`submitted` → `working` → `completed`) |
 | 4    | **Deliver**  | Sub-agents return results as artifacts; Travel Agent combines them |
 
-## Files
+## Skill\Code Files
 
 | File | Description |
 |------|-------------|
@@ -40,6 +40,22 @@ You (User)
 | `hotel_agent.py` | Hotel Agent — Flask server on port 5002 |
 | `travel_agent.py` | Travel Agent — Orchestrator that coordinates sub-agents |
 | `run_demo.py` | Demo runner — starts everything and runs sample bookings |
+
+
+## Agent Files
+
+| File | Description |
+|------|-------------|
+|agent.md |— Defines the orchestrator role, skills, and sub_agents list with URLs for child agents|
+|agent.md |— Defines the Flight Agent identity, skills, endpoints, and behavioral instructions|
+|agent.md |— Defines the Hotel Agent identity, skills, endpoints, and behavioral instructions|
+|agent_loader.py |— Utility to parse YAML frontmatter from agent.md files|
+
+## Key Implementation Details:
+
+1. Each agent loads its name, description, URL, and skills from its agent.md file (YAML frontmatter) rather than hardcoding them
+2. The Travel Agent reads its sub_agents list from agent.md to know which child agents to discover — no more hardcoded URLs in Python
+3. Each agent.md also contains markdown instructions describing the agent's role and behavior, accessible via AGENT_INSTRUCTIONS at runtime
 
 ## Quick Start
 
@@ -86,3 +102,30 @@ plan = agent.book_trip('London', '2026-08-10')
 ### Hotel Agent (port 5002)
 - `GET /.well-known/agent.json` — Agent Card
 - `POST /a2a` — Submit a hotel search task
+
+
+## Testing Custome agent Option A: Custom Agent Modes
+- Create .github/agents/ folder in your workspace
+- Create a .agent.md file per agent, e.g. .github/agents/travel-agent.agent.md:
+- Invoke in Copilot Chat with @TravelAgent book me a trip to Paris
+- Limitation: This approach gives Copilot the persona and instructions but doesn't natively run your Flask agents. You'd need to tell it to invoke them via terminal commands.
+
+## Testing Custome agent Option B: MCP Server 
+
+- pip install mcp
+- Have MCP wrapper like mcp_server.py
+- Register in VS Code — create .vscode/mcp.json:
+```json
+{
+  "servers": {
+    "travel-agent": {
+      "type": "stdio",
+      "command": "d:/Sunit/RnD/a2a_demo_TravelAgent/.venv/Scripts/python.exe",
+      "args": ["mcp_server.py"],
+      "cwd": "d:/Sunit/RnD/a2a_demo_TravelAgent"
+    }
+  }
+}
+```
+- Start sub-agents first (flight + hotel Flask servers must be running)
+- Use in Copilot Chat (Agent mode) — the @book_trip tool will appear and Copilot can invoke it
