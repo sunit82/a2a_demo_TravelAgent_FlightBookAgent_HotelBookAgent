@@ -1,6 +1,9 @@
 """
 Hotel Agent — A2A-compliant agent that searches for hotels.
 
+Configuration is loaded from agents/hotel_agent.md which defines
+this agent's identity, skills, and behavioral instructions.
+
 Exposes:
   GET  /.well-known/agent.json  → Agent Card (discovery)
   POST /a2a                     → Handle A2A task (search hotels)
@@ -9,23 +12,31 @@ Exposes:
 import random
 from flask import Flask, request, jsonify
 from a2a_models import AgentCard, AgentSkill, Task, TaskStatus, Artifact, A2AMessage
+from agent_loader import load_agent_config, get_agent_md_path
 
 app = Flask(__name__)
 
 # ---------------------------------------------------------------------------
-# Agent Card
+# Load configuration from agent.md
+# ---------------------------------------------------------------------------
+_agent_md = load_agent_config(get_agent_md_path("hotel_agent"))
+_config = _agent_md["config"]
+AGENT_INSTRUCTIONS = _agent_md["instructions"]
+
+# ---------------------------------------------------------------------------
+# Agent Card — built from agent.md configuration
 # ---------------------------------------------------------------------------
 AGENT_CARD = AgentCard(
-    name="Hotel Agent",
-    description="Searches for available hotel accommodations based on destination "
-                "and check-in date. Returns hotel options with ratings and prices.",
-    url="http://localhost:5002",
+    name=_config["name"],
+    description=_config["description"],
+    url=_config["url"],
     skills=[
         AgentSkill(
-            id="hotel-search",
-            name="Hotel Search",
-            description="Find available hotels at a destination for given dates.",
+            id=s["id"],
+            name=s["name"],
+            description=s["description"],
         )
+        for s in _config.get("skills", [])
     ],
 )
 
@@ -149,6 +160,8 @@ def _parse_request(message: str) -> tuple[str, str]:
 
 
 if __name__ == "__main__":
-    print("🏨  Hotel Agent starting on http://localhost:5002")
-    print(f"   Agent Card: http://localhost:5002/.well-known/agent.json")
-    app.run(port=5002, debug=False)
+    port = int(_config["url"].split(":")[-1])
+    print(f"🏨  {_config['name']} starting on {_config['url']}")
+    print(f"   Agent Card: {_config['url']}/.well-known/agent.json")
+    print(f"   Loaded instructions from: agents/hotel_agent.md")
+    app.run(port=port, debug=False)

@@ -1,6 +1,9 @@
 """
 Flight Agent — A2A-compliant agent that searches for flights.
 
+Configuration is loaded from agents/flight_agent.md which defines
+this agent's identity, skills, and behavioral instructions.
+
 Exposes:
   GET  /.well-known/agent.json  → Agent Card (discovery)
   POST /a2a                     → Handle A2A task (search flights)
@@ -10,23 +13,31 @@ import json
 import random
 from flask import Flask, request, jsonify
 from a2a_models import AgentCard, AgentSkill, Task, TaskStatus, Artifact, A2AMessage
+from agent_loader import load_agent_config, get_agent_md_path
 
 app = Flask(__name__)
 
 # ---------------------------------------------------------------------------
-# Agent Card (the "business card" other agents read for discovery)
+# Load configuration from agent.md
+# ---------------------------------------------------------------------------
+_agent_md = load_agent_config(get_agent_md_path("flight_agent"))
+_config = _agent_md["config"]
+AGENT_INSTRUCTIONS = _agent_md["instructions"]
+
+# ---------------------------------------------------------------------------
+# Agent Card — built from agent.md configuration
 # ---------------------------------------------------------------------------
 AGENT_CARD = AgentCard(
-    name="Flight Agent",
-    description="Searches for available flights based on destination and date. "
-                "Returns a list of flight options with airlines, times, and prices.",
-    url="http://localhost:5001",
+    name=_config["name"],
+    description=_config["description"],
+    url=_config["url"],
     skills=[
         AgentSkill(
-            id="flight-search",
-            name="Flight Search",
-            description="Find available flights to a destination on a given date.",
+            id=s["id"],
+            name=s["name"],
+            description=s["description"],
         )
+        for s in _config.get("skills", [])
     ],
 )
 
@@ -146,6 +157,8 @@ def _parse_request(message: str) -> tuple[str, str]:
 
 
 if __name__ == "__main__":
-    print("✈️  Flight Agent starting on http://localhost:5001")
-    print(f"   Agent Card: http://localhost:5001/.well-known/agent.json")
-    app.run(port=5001, debug=False)
+    port = int(_config["url"].split(":")[-1])
+    print(f"✈️  {_config['name']} starting on {_config['url']}")
+    print(f"   Agent Card: {_config['url']}/.well-known/agent.json")
+    print(f"   Loaded instructions from: agents/flight_agent.md")
+    app.run(port=port, debug=False)
