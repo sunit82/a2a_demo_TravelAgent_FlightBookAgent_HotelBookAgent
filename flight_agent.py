@@ -1,5 +1,5 @@
 """
-Flight Agent — A2A-compliant agent that searches for flights.
+Flight-Agent — A2A-compliant agent that searches for flights.
 
 Configuration is loaded from agents/flight_agent.md which defines
 this agent's identity, skills, and behavioral instructions.
@@ -86,24 +86,34 @@ def agent_card():
 @app.route("/a2a", methods=["POST"])
 def handle_task():
     """Steps 2-4 — Request → Process → Deliver."""
-    data = request.get_json(force=True)
-    task_data = data.get("task", {})
+    data = request.get_json(force=True, silent=True)
+    if data is None:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
 
-    # Build task from incoming message
-    task = Task(
-        id=task_data.get("id", ""),
-        message=task_data.get("message", ""),
-        status=TaskStatus.SUBMITTED,
-    )
+    # Support simple JSON format: {"destination": "...", "date": "..."}
+    if "destination" in data and "date" in data:
+        destination = data["destination"]
+        date = data["date"]
+        task = Task(
+            id=data.get("id", "direct-request"),
+            message=f"Find flights to {destination} on {date}",
+            status=TaskStatus.SUBMITTED,
+        )
+    else:
+        task_data = data.get("task", {})
+        task = Task(
+            id=task_data.get("id", ""),
+            message=task_data.get("message", ""),
+            status=TaskStatus.SUBMITTED,
+        )
+        destination, date = _parse_request(task.message)
 
-    print(f"\n✈️  [Flight Agent] Received task: {task.message}")
+    print(f"\n✈️  [Flight-Agent] Received task: {task.message}")
 
     # --- Step 3: Process ---
     task.update_status(TaskStatus.WORKING)
     print(f"   Status: {task.status.value}")
 
-    # Parse destination and date from the message
-    destination, date = _parse_request(task.message)
     flights = search_flights(destination, date)
 
     # --- Step 4: Deliver ---
@@ -116,7 +126,7 @@ def handle_task():
     print(f"   Status: {task.status.value} — found {len(flights)} flights")
 
     response = A2AMessage(
-        sender="Flight Agent",
+        sender="Flight-Agent",
         receiver=data.get("sender", ""),
         task=task,
     )

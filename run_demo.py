@@ -2,7 +2,7 @@
 A2A Demo Runner — Travel Agent with Flight & Hotel Sub-Agents
 
 This script:
-1. Starts the Flight Agent and Hotel Agent as background Flask servers
+1. Starts the Flight-Agent and Hotel-Agent as background Flask servers
 2. Runs the Travel Agent orchestrator which demonstrates the full A2A flow:
    Discover → Request → Process → Deliver
 
@@ -73,8 +73,8 @@ def main():
     print("╠" + "═" * 63 + "╣")
     print("║  Agents:                                                     ║")
     print("║    🚌 Travel Agent  — Orchestrator (this process)            ║")
-    print("║    ✈️  Flight Agent  — http://localhost:5001                  ║")
-    print("║    🏨 Hotel Agent   — http://localhost:5002                  ║")
+    print("║    ✈️  Flight-Agent  — http://localhost:5001                  ║")
+    print("║    🏨 Hotel-Agent   — http://localhost:5002                  ║")
     print("║                                                              ║")
     print("║  A2A Flow: Discover → Request → Process → Deliver           ║")
     print("╚" + "═" * 63 + "╝")
@@ -83,13 +83,13 @@ def main():
     # Start sub-agent servers
     # ------------------------------------------------------------------
     print("\n🚀 Starting sub-agent servers...")
-    start_agent("flight_agent.py", "Flight Agent (port 5001)")
-    start_agent("hotel_agent.py", "Hotel Agent (port 5002)")
+    start_agent("flight_agent.py", "Flight-Agent (port 5001)")
+    start_agent("hotel_agent.py", "Hotel-Agent (port 5002)")
 
     # Wait for servers to be ready
     print("   Waiting for servers to be ready...")
-    wait_for_server("http://localhost:5001/.well-known/agent.json", "Flight Agent")
-    wait_for_server("http://localhost:5002/.well-known/agent.json", "Hotel Agent")
+    wait_for_server("http://localhost:5001/.well-known/agent.json", "Flight-Agent")
+    wait_for_server("http://localhost:5002/.well-known/agent.json", "Hotel-Agent")
 
     # ------------------------------------------------------------------
     # Run the Travel Agent demo
@@ -127,7 +127,7 @@ def main():
     This demo showed the A2A (Agent-to-Agent) protocol in action:
 
     1. DISCOVER — Travel Agent read the "business cards" (Agent Cards)
-       of the Flight Agent and Hotel Agent via /.well-known/agent.json
+       of the Flight-Agent and Hotel-Agent via /.well-known/agent.json
 
     2. REQUEST — Travel Agent sent standardized A2A messages to each
        sub-agent with the user's travel requirements
@@ -139,8 +139,8 @@ def main():
        Travel Agent combined them into a unified travel plan.
 
     Architecture:
-       You → Travel Agent → Flight Agent  (via A2A Protocol)
-                           → Hotel Agent   (via A2A Protocol)
+       You → Travel Agent → Flight-Agent  (via A2A Protocol)
+                           → Hotel-Agent   (via A2A Protocol)
     """)
 
     # Clean up

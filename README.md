@@ -1,7 +1,7 @@
 # A2A Protocol Demo — Travel Agent Booking System
 
 This project demonstrates the **A2A (Agent-to-Agent) Protocol** using a Travel Agent
-that orchestrates two sub-agents — a **Flight Agent** and a **Hotel Agent** — to fulfil
+that orchestrates two sub-agents — a **Flight-Agent** and a **Hotel-Agent** — to fulfil
 a travel booking request.
 
 ## Architecture
@@ -27,7 +27,7 @@ You (User)
 | Step | Name       | What Happens |
 |------|-----------|-------------|
 | 1    | **Discover** | Travel Agent reads Agent Cards from sub-agents via `/.well-known/agent.json` |
-| 2    | **Request**  | Travel Agent sends A2A messages (tasks) to Flight & Hotel agents |
+| 2    | **Request**  | Travel Agent sends A2A messages (tasks) to Flight & Hotel-Agents |
 | 3    | **Process**  | Each sub-agent processes the task (`submitted` → `working` → `completed`) |
 | 4    | **Deliver**  | Sub-agents return results as artifacts; Travel Agent combines them |
 
@@ -36,8 +36,8 @@ You (User)
 | File | Description |
 |------|-------------|
 | `a2a_models.py` | Core A2A data models (AgentCard, Task, Artifact, A2AMessage) |
-| `flight_agent.py` | Flight Agent — Flask server on port 5001 |
-| `hotel_agent.py` | Hotel Agent — Flask server on port 5002 |
+| `flight_agent.py` | Flight-Agent — Flask server on port 5001 |
+| `hotel_agent.py` | Hotel-Agent — Flask server on port 5002 |
 | `travel_agent.py` | Travel Agent — Orchestrator that coordinates sub-agents |
 | `run_demo.py` | Demo runner — starts everything and runs sample bookings |
 
@@ -47,8 +47,8 @@ You (User)
 | File | Description |
 |------|-------------|
 |agent.md |— Defines the orchestrator role, skills, and sub_agents list with URLs for child agents|
-|agent.md |— Defines the Flight Agent identity, skills, endpoints, and behavioral instructions|
-|agent.md |— Defines the Hotel Agent identity, skills, endpoints, and behavioral instructions|
+|agent.md |— Defines the Flight-Agent identity, skills, endpoints, and behavioral instructions|
+|agent.md |— Defines the Hotel-Agent identity, skills, endpoints, and behavioral instructions|
 |agent_loader.py |— Utility to parse YAML frontmatter from agent.md files|
 
 ## Key Implementation Details:
@@ -68,7 +68,7 @@ python run_demo.py
 ```
 
 The demo will:
-1. Start Flight Agent and Hotel Agent as background servers
+1. Start Flight-Agent and Hotel-Agent as background servers
 2. Run the Travel Agent which discovers, requests, and combines results
 3. Show two sample bookings (Paris and Tokyo)
 4. Clean up all processes on exit
@@ -78,10 +78,10 @@ The demo will:
 You can also start each agent separately for manual testing:
 
 ```bash
-# Terminal 1 — Flight Agent
+# Terminal 1 — Flight-Agent
 python flight_agent.py
 
-# Terminal 2 — Hotel Agent
+# Terminal 2 — Hotel-Agent
 python hotel_agent.py
 
 # Terminal 3 — Interactive Travel Agent
@@ -95,11 +95,11 @@ plan = agent.book_trip('London', '2026-08-10')
 
 ## API Endpoints
 
-### Flight Agent (port 5001)
+### Flight-Agent (port 5001)
 - `GET /.well-known/agent.json` — Agent Card
 - `POST /a2a` — Submit a flight search task
 
-### Hotel Agent (port 5002)
+### Hotel-Agent (port 5002)
 - `GET /.well-known/agent.json` — Agent Card
 - `POST /a2a` — Submit a hotel search task
 
