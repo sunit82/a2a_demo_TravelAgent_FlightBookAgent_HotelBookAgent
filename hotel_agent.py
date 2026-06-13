@@ -1,5 +1,5 @@
 """
-Hotel Agent — A2A-compliant agent that searches for hotels.
+Hotel-Agent — A2A-compliant agent that searches for hotels.
 
 Configuration is loaded from agents/hotel_agent.md which defines
 this agent's identity, skills, and behavioral instructions.
@@ -48,6 +48,8 @@ HOTEL_NAMES = {
               "Ibis Paris Centre", "The Ritz Paris"],
     "London": ["The Savoy", "Premier Inn London", "Hilton Park Lane",
                "Travelodge Central", "Claridge's"],
+    "Mumbai": ["The Taj Mahal Palace", "The Oberoi Mumbai", "Trident Nariman Point",
+              "ITC Maratha", "The St. Regis Mumbai"],
     "Tokyo": ["Hotel Gracery Shinjuku", "The Peninsula Tokyo", "APA Hotel Ginza",
               "Park Hyatt Tokyo", "Dormy Inn Akihabara"],
     "New York": ["The Plaza", "Pod 51 Hotel", "Hilton Midtown",
@@ -97,22 +99,35 @@ def agent_card():
 @app.route("/a2a", methods=["POST"])
 def handle_task():
     """Steps 2-4 — Request → Process → Deliver."""
-    data = request.get_json(force=True)
-    task_data = data.get("task", {})
+    data = request.get_json(force=True, silent=True)
+    if data is None:
+        return jsonify({"error": "Request body must be valid JSON"}), 400
 
-    task = Task(
-        id=task_data.get("id", ""),
-        message=task_data.get("message", ""),
-        status=TaskStatus.SUBMITTED,
-    )
 
-    print(f"\n🏨  [Hotel Agent] Received task: {task.message}")
+    # Support simple JSON format: {"destination": "...", "date": "..."}
+    if "destination" in data and "date" in data:
+        destination = data["destination"]
+        checkin = data["date"]
+        task = Task(
+            id=data.get("id", "direct-request"),
+            message=f"Find hotels in {destination} on {checkin}",
+            status=TaskStatus.SUBMITTED,
+        )
+    else:
+        task_data = data.get("task", {})
+        task = Task(
+            id=task_data.get("id", ""),
+            message=task_data.get("message", ""),
+            status=TaskStatus.SUBMITTED,
+        )
+        destination, checkin = _parse_request(task.message)
+
+    print(f"\n🏨  [Hotel-Agent] Received task: {task.message}")
 
     # --- Step 3: Process ---
     task.update_status(TaskStatus.WORKING)
     print(f"   Status: {task.status.value}")
 
-    destination, checkin = _parse_request(task.message)
     hotels = search_hotels(destination, checkin)
 
     # --- Step 4: Deliver ---
@@ -125,7 +140,7 @@ def handle_task():
     print(f"   Status: {task.status.value} — found {len(hotels)} hotels")
 
     response = A2AMessage(
-        sender="Hotel Agent",
+        sender="Hotel-Agent",
         receiver=data.get("sender", ""),
         task=task,
     )
@@ -139,8 +154,14 @@ def _parse_request(message: str) -> tuple[str, str]:
 
     msg_lower = message.lower()
 
-    if " in " in msg_lower:
-        after_in = msg_lower.split(" in ", 1)[1]
+    destination_phrase = None
+    for marker in (" in ", " to "):
+        if marker in msg_lower:
+            destination_phrase = msg_lower.split(marker, 1)[1]
+            break
+
+    if destination_phrase:
+        after_in = destination_phrase
         parts = after_in.split()
         dest_words = []
         for w in parts:

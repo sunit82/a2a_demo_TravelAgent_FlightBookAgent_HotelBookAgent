@@ -6,7 +6,7 @@ this agent's identity, skills, sub-agent URLs, and behavioral instructions.
 
 This is the main agent that the user interacts with. It:
 1. DISCOVERS sub-agents by fetching their Agent Cards (URLs from agent.md)
-2. REQUESTS work by sending A2A messages to Flight Agent and Hotel Agent
+2. REQUESTS work by sending A2A messages to Flight-Agent and Hotel-Agent
 3. Waits while sub-agents PROCESS the tasks
 4. Receives DELIVERED artifacts and combines them into a travel plan
 
@@ -105,8 +105,8 @@ class TravelAgent:
     def book_trip(self, destination: str, date: str) -> dict:
         """
         Orchestrate a full travel booking:
-        - Ask Flight Agent for flights
-        - Ask Hotel Agent for hotels
+        - Ask Flight-Agent for flights
+        - Ask Hotel-Agent for hotels
         - Combine results into a travel plan
         """
         print("\n" + "=" * 65)
@@ -115,13 +115,13 @@ class TravelAgent:
 
         # --- Request flights ---
         flight_response = self._send_task(
-            "Flight Agent",
+            "Flight-Agent",
             f"Find a flight to {destination} on {date}"
         )
 
         # --- Request hotels ---
         hotel_response = self._send_task(
-            "Hotel Agent",
+            "Hotel-Agent",
             f"Find hotels in {destination} on {date}"
         )
 
@@ -136,7 +136,7 @@ class TravelAgent:
         if flight_response:
             flight_task = flight_response.get("task", {})
             status = flight_task.get("status", "unknown")
-            print(f"\n   Flight Agent task status: {status}")
+            print(f"\n   Flight-Agent task status: {status}")
             if status == "completed":
                 for artifact in flight_task.get("artifacts", []):
                     flights = artifact.get("data", {}).get("flights", [])
@@ -145,7 +145,7 @@ class TravelAgent:
         if hotel_response:
             hotel_task = hotel_response.get("task", {})
             status = hotel_task.get("status", "unknown")
-            print(f"\n   Hotel Agent task status: {status}")
+            print(f"\n   Hotel-Agent task status: {status}")
             if status == "completed":
                 for artifact in hotel_task.get("artifacts", []):
                     hotels = artifact.get("data", {}).get("hotels", [])
