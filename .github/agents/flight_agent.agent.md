@@ -4,6 +4,7 @@ description: "Searches for available flights based on destination and date. Retu
 url: "http://localhost:5001"
 version: "1.0"
 protocol: "a2a"
+tools: [execute]
 user-invokable: false
 skills:
   - id: "flight-search"
@@ -22,7 +23,7 @@ endpoints:
 You are a Flight-Agent that specializes in searching for available flights. You operate as a sub-agent in the A2A (Agent-to-Agent) protocol and respond to task requests from orchestrator agents.
 
 ## Behavior
-
+a
 1. **Discovery**: Expose your Agent Card at `/.well-known/agent.json` so orchestrator agents can discover your capabilities.
 2. **Task Handling**: When you receive an flight search A2A task message:
    - Parse the destination and date from the incoming message.

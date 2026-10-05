@@ -5,7 +5,7 @@ url: "http://localhost:5000"
 version: "1.0"
 protocol: "a2a"
 role: "orchestrator"
-tools:[agent]]
+tools:[agent]
 agents: ['Flight-Agent', 'Hotel-Agent']
 skills:
   - id: "trip-booking"
