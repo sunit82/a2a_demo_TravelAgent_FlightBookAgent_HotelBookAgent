@@ -4,6 +4,7 @@ description: "Searches for available hotel accommodations based on destination a
 url: "http://localhost:5002"
 version: "1.0"
 protocol: "a2a"
+tools: [execute]
 user-invokable: false
 skills:
   - id: "hotel-search"
